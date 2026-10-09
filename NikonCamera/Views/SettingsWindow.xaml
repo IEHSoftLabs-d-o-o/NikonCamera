@@ -1,0 +1,78 @@
+﻿<Window x:Class="NikonCamera.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        Width="420"
+        SizeToContent="Height"
+        Loaded="SettingsWindow_OnLoaded">
+
+    <Window.Resources>
+        
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Kameramodell" 
+                  Margin="10">
+            <ComboBox Name="ComboBoxCameraModels"
+                      Height="20">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Manufacturer}"></TextBlock>
+                            <TextBlock Margin="5,0,0,0" Text="{Binding Model}"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </GroupBox>
+        <GroupBox Header="ArianaLab"
+                  Grid.Row="1"
+                  Margin="10,0,10,10">
+            <StackPanel Margin="5">
+                <TextBlock Text="Foto-Ordner"></TextBlock>
+                <TextBox Name="TextBoxFotoFolder"
+                         Margin="0,4,0,8"></TextBox>
+                <TextBlock Text="ArianaLab-Adresse"></TextBlock>
+                <TextBox Name="TextBoxBaseUrl"
+                         Margin="0,4,0,8"></TextBox>
+                <TextBlock Text="Anmeldung"></TextBlock>
+                <TextBox Name="TextBoxAuth"
+                         Margin="0,4,0,8"></TextBox>
+                <TextBlock Text="Client-Pfad"></TextBlock>
+                <TextBox Name="TextBoxClientPath"
+                         Margin="0,4,0,8"></TextBox>
+                <TextBlock Text="Client-Programm"></TextBlock>
+                <TextBox Name="TextBoxClientExecutable"
+                         Margin="0,4,0,0"></TextBox>
+            </StackPanel>
+        </GroupBox>
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <Button Name="ButtonOk"
+                    Width="100"
+                    Height="25"
+                    Margin="5"
+                    Content="OK"
+                    Click="ButtonOk_OnClick">
+            </Button>
+            <Button Name="ButtonCancel"
+                    Width="100"
+                    Height="25"
+                    Margin="5"
+                    Content="Abbrechen"
+                    Click="ButtonCancel_OnClick">
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

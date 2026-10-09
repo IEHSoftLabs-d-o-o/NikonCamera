@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NikonCamera/NikonCamera.csproj" />
+  <Project Path="NikonCsWrapper/NikonCsWrapper.csproj" />
+</Solution>
