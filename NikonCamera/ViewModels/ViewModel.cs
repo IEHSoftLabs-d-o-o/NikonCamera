@@ -68,8 +68,16 @@ public partial class ViewModel : ObservableObject
         _arianaLabClientExecutable = string.IsNullOrWhiteSpace(settings.ArianaLabClientExecutable) ? AppSettings.DefaultArianaLabClientExecutable : settings.ArianaLabClientExecutable;
         Angle = settings.Angle;
 
-        if (EnsureArianaLabClientIsRunning()) 
-            return;
+        try
+        {
+            EnsureArianaLabClientIsRunning();
+        }
+        catch (Exception ex)
+        {
+            dialogProvider.ShowExceptionMessage(ex.Message);
+
+            Application.Current.Shutdown();
+        }
 
         IsCameraAvailable = false;
 
@@ -112,35 +120,31 @@ public partial class ViewModel : ObservableObject
         CameraImages = [];
     }
 
-    private bool EnsureArianaLabClientIsRunning()
+    private void EnsureArianaLabClientIsRunning()
     {
         var clientProcessName = Path.GetFileNameWithoutExtension(_arianaLabClientExecutable);
         var processes = Process.GetProcessesByName(clientProcessName);
 
         if (processes.Length != 0) 
-            return false;
+            return;
 
-        try
+        var fileName = Path.Combine(_arianaLabClientPath, _arianaLabClientExecutable);
+
+        if (!File.Exists(fileName))
         {
-            var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = Path.Combine(_arianaLabClientPath, _arianaLabClientExecutable),
-                WorkingDirectory = _arianaLabClientPath,
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Minimized
-            });
-
-            if (process != null)
-                _ = MinimizeClientWhenReady(process);
-        }
-        catch (Exception ex)
-        {
-            _dialogProvider.ShowExceptionMessage(ex.Message);
-
-            return true;
+            throw new FileNotFoundException($"ArianaLab Client '{fileName}' nicht verfügbar.");
         }
 
-        return false;
+        var process = Process.Start(new ProcessStartInfo
+        {
+            FileName = Path.Combine(_arianaLabClientPath, _arianaLabClientExecutable),
+            WorkingDirectory = _arianaLabClientPath,
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Minimized
+        });
+
+        if (process != null)
+            _ = MinimizeClientWhenReady(process);
     }
 
     private static async Task MinimizeClientWhenReady(Process process)
@@ -278,7 +282,7 @@ public partial class ViewModel : ObservableObject
 
         AddCameras(Manufacturer.Nikon, true);
 
-        if (Environment.MachineName.StartsWith("lbdev", StringComparison.OrdinalIgnoreCase))
+        if (Environment.MachineName.Equals("lbdev01", StringComparison.OrdinalIgnoreCase))
             AddCameras(Manufacturer.Dummy);
     }
 
