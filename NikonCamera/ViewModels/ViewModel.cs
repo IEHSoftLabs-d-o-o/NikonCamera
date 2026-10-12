@@ -277,7 +277,9 @@ public partial class ViewModel : ObservableObject
         _availableCameraDefinitions = [];
 
         AddCameras(Manufacturer.Nikon, true);
-        AddCameras(Manufacturer.Dummy);
+
+        if (Environment.MachineName.StartsWith("lbdev", StringComparison.OrdinalIgnoreCase))
+            AddCameras(Manufacturer.Dummy);
     }
 
     private void AddCameras(string manufacturer, bool isMandatory = false)
