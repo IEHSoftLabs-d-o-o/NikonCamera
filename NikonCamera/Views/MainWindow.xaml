@@ -70,7 +70,6 @@
                 <Setter Property="VerticalAlignment" Value="Center"></Setter>
                 <Setter Property="Margin" Value="5"></Setter>
             </Style>
-            <converters:MultiValueConverter x:Key="MultiValueConverter"></converters:MultiValueConverter>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
         </ResourceDictionary>
     </Window.Resources>
@@ -237,7 +236,7 @@
                         </Grid.RowDefinitions>
                         <xamlBehaviors:Interaction.Triggers>
                             <xamlBehaviors:EventTrigger EventName="MouseUp">
-                                <xamlBehaviors:InvokeCommandAction Command="{Binding DataContext.ImageMouseDownCommand,ElementName=LayoutRoot}"></xamlBehaviors:InvokeCommandAction>
+                                <xamlBehaviors:InvokeCommandAction Command="{Binding DataContext.ImageMouseUpCommand,ElementName=LayoutRoot}"></xamlBehaviors:InvokeCommandAction>
                             </xamlBehaviors:EventTrigger>
                         </xamlBehaviors:Interaction.Triggers>
                         <Image Height="150" Source="{Binding ImageSource}"></Image>

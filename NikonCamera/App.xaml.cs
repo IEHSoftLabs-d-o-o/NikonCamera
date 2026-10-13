@@ -51,8 +51,9 @@ public partial class App
                 appKey.SetValue("DisplayIcon", iconPath);
             }
         }
-        catch (Exception)
+        catch
         {
+            // ignored
         }
     }
 }

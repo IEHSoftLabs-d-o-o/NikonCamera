@@ -5,7 +5,6 @@ using NikonCamera.Services;
 using NikonCamera.ViewModels;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -90,7 +89,7 @@ public partial class MainWindow
 
     private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (SearchTextBox.IsKeyboardFocused || e.Key is not (Key.Return or Key.Enter))
+        if (SearchTextBox.IsKeyboardFocused || e.Key is not Key.Return)
             return;
 
         var gapMs = (DateTime.UtcNow - _lastScanKeyUtc).TotalMilliseconds;

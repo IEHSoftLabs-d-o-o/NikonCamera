@@ -428,7 +428,7 @@ public partial class ViewModel : ObservableObject
 
                         _model?.DisableLiveView();
                         SelectedCameraImage = CameraImages?.FirstOrDefault();
-                        ImageMouseDownAsync();
+                        ImageMouseUpAsync();
                     });
                 }
             });
@@ -530,7 +530,7 @@ public partial class ViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task ImageMouseDownAsync()
+    private Task ImageMouseUpAsync()
     {
         if (SelectedCameraImage == null) 
             return Task.CompletedTask;

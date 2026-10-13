@@ -220,12 +220,10 @@ public class DummyCameraModel : CameraModelBase, ICameraModel
 
         using var vignettePath = new GraphicsPath();
         vignettePath.AddEllipse(-width * 0.15f, -height * 0.2f, width * 1.3f, height * 1.4f);
-        using (var vignette = new PathGradientBrush(vignettePath)
-               {
-                   CenterColor = Color.FromArgb(0, 0, 0, 0),
-                   SurroundColors = [Color.FromArgb(150, 12, 8, 4)]
-               })
+        using (var vignette = new PathGradientBrush(vignettePath))
         {
+            vignette.CenterColor = Color.FromArgb(0, 0, 0, 0);
+            vignette.SurroundColors = [Color.FromArgb(150, 12, 8, 4)];
             graphics.FillRectangle(vignette, bounds);
         }
     }
