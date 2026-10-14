@@ -46,8 +46,7 @@ public partial class ViewModel : ObservableObject
     private string _arianaLabFotoFolder;
     private string _authString;
     private string _arianaLabBaseUrl;
-    private string _arianaLabClientPath;
-    private string _arianaLabClientExecutable;
+    private string _arianaLabClient;
 
     private CameraDefinition? _cameraDefinition;
     private List<CameraDefinition>? _availableCameraDefinitions;
@@ -64,8 +63,7 @@ public partial class ViewModel : ObservableObject
         _arianaLabFotoFolder = string.IsNullOrWhiteSpace(settings.FotoFolder) ? AppSettings.DefaultFotoFolder : settings.FotoFolder;
         _arianaLabBaseUrl = string.IsNullOrWhiteSpace(settings.BaseUrl) ? AppSettings.DefaultBaseUrl : settings.BaseUrl;
         _authString = string.IsNullOrWhiteSpace(settings.Auth) ? AppSettings.DefaultAuth : settings.Auth;
-        _arianaLabClientPath = string.IsNullOrWhiteSpace(settings.ArianaLabClientPath) ? AppSettings.DefaultArianaLabClientPath : settings.ArianaLabClientPath;
-        _arianaLabClientExecutable = string.IsNullOrWhiteSpace(settings.ArianaLabClientExecutable) ? AppSettings.DefaultArianaLabClientExecutable : settings.ArianaLabClientExecutable;
+        _arianaLabClient = string.IsNullOrWhiteSpace(settings.ArianaLabClient) ? AppSettings.DefaultArianaLabClient : settings.ArianaLabClient;
         Angle = settings.Angle;
 
         try
@@ -122,23 +120,21 @@ public partial class ViewModel : ObservableObject
 
     private void EnsureArianaLabClientIsRunning()
     {
-        var clientProcessName = Path.GetFileNameWithoutExtension(_arianaLabClientExecutable);
+        var clientProcessName = Path.GetFileNameWithoutExtension(_arianaLabClient);
         var processes = Process.GetProcessesByName(clientProcessName);
 
         if (processes.Length != 0) 
             return;
 
-        var fileName = Path.Combine(_arianaLabClientPath, _arianaLabClientExecutable);
-
-        if (!File.Exists(fileName))
+        if (!File.Exists(_arianaLabClient))
         {
-            throw new FileNotFoundException($"ArianaLab Client '{fileName}' nicht verfügbar.");
+            throw new FileNotFoundException($"ArianaLab Client '{_arianaLabClient}' nicht verfügbar.");
         }
 
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = Path.Combine(_arianaLabClientPath, _arianaLabClientExecutable),
-            WorkingDirectory = _arianaLabClientPath,
+            FileName = _arianaLabClient,
+            WorkingDirectory = Path.GetDirectoryName(_arianaLabClient) ?? string.Empty,
             UseShellExecute = true,
             WindowStyle = ProcessWindowStyle.Minimized
         });
@@ -871,36 +867,40 @@ public partial class ViewModel : ObservableObject
             _arianaLabFotoFolder,
             _arianaLabBaseUrl,
             _authString,
-            _arianaLabClientPath,
-            _arianaLabClientExecutable);
+            _arianaLabClient);
 
         w.ShowDialog();
 
         if (!w.Accepted)
             return Task.CompletedTask;
 
+        var previousArianaLabClient = _arianaLabClient;
         _arianaLabFotoFolder = string.IsNullOrWhiteSpace(w.FotoFolder) ? AppSettings.DefaultFotoFolder : w.FotoFolder;
         _arianaLabBaseUrl = string.IsNullOrWhiteSpace(w.BaseUrl) ? AppSettings.DefaultBaseUrl : w.BaseUrl;
         _authString = string.IsNullOrWhiteSpace(w.Auth) ? AppSettings.DefaultAuth : w.Auth;
-        _arianaLabClientPath = string.IsNullOrWhiteSpace(w.ArianaLabClientPath) ? AppSettings.DefaultArianaLabClientPath : w.ArianaLabClientPath;
-        _arianaLabClientExecutable = string.IsNullOrWhiteSpace(w.ArianaLabClientExecutable) ? AppSettings.DefaultArianaLabClientExecutable : w.ArianaLabClientExecutable;
+        _arianaLabClient = string.IsNullOrWhiteSpace(w.ArianaLabClient) ? AppSettings.DefaultArianaLabClient : w.ArianaLabClient;
 
         var settings = _settingsStore.Load();
         settings.FotoFolder = _arianaLabFotoFolder;
         settings.BaseUrl = _arianaLabBaseUrl;
         settings.Auth = _authString;
-        settings.ArianaLabClientPath = _arianaLabClientPath;
-        settings.ArianaLabClientExecutable = _arianaLabClientExecutable;
+        settings.ArianaLabClient = _arianaLabClient;
         _settingsStore.Save(settings);
 
-        if (w.CameraDefinition == null
-            || (w.CameraDefinition.Manufacturer == _cameraDefinition?.Manufacturer
-                && w.CameraDefinition.Model == _cameraDefinition?.Model))
+        var cameraChanged = w.CameraDefinition != null
+            && (w.CameraDefinition.Manufacturer != _cameraDefinition?.Manufacturer
+                || w.CameraDefinition.Model != _cameraDefinition?.Model);
+        var clientChanged = !string.Equals(previousArianaLabClient, _arianaLabClient, StringComparison.OrdinalIgnoreCase);
+
+        if (!cameraChanged && !clientChanged)
             return Task.CompletedTask;
 
-        _cameraDefinition = w.CameraDefinition;
+        if (cameraChanged)
+            _cameraDefinition = w.CameraDefinition;
 
-        _dialogProvider.ShowInformationMessage("Für einen Wechsel der Kamera muss das Kameramodul neu gestartet werden.");
+        _dialogProvider.ShowInformationMessage(cameraChanged
+            ? "Für einen Wechsel der Kamera muss das Kameramodul neu gestartet werden."
+            : "Für einen Wechsel des ArianaLab Client muss das Kameramodul neu gestartet werden.");
 
         WeakReferenceMessenger.Default.Send(new RestartMessage());
 

@@ -12,8 +12,7 @@ public sealed class AppSettings
     public const string DefaultFotoFolder = @"C:\Fotos";
     public const string DefaultBaseUrl = "https://arianalab.drberns.de";
     public const string DefaultAuth = "ArianaLab.NikonCamera:ArianaLab.NikonCamera";
-    public const string DefaultArianaLabClientPath = @"C:\LK\Tools\Ariana Lab Client";
-    public const string DefaultArianaLabClientExecutable = "ArianaLabClient.UI.exe";
+    public const string DefaultArianaLabClient = @"C:\LK\Tools\Ariana Lab Client\ArianaLabClient.UI.exe";
 
     public double Angle { get; set; }
     public string? Manufacturer { get; set; }
@@ -25,8 +24,7 @@ public sealed class AppSettings
     public WindowState WindowState { get; set; } = WindowState.Normal;
     public string FotoFolder { get; set; } = DefaultFotoFolder;
     public string BaseUrl { get; set; } = DefaultBaseUrl;
-    public string ArianaLabClientPath { get; set; } = DefaultArianaLabClientPath;
-    public string ArianaLabClientExecutable { get; set; } = DefaultArianaLabClientExecutable;
+    public string ArianaLabClient { get; set; } = DefaultArianaLabClient;
     public string? AuthProtected { get; set; }
 
     [JsonIgnore]
@@ -53,14 +51,31 @@ public sealed class AppSettingsStore
 
         try
         {
-            var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath), JsonOptions) ?? new AppSettings();
+            var json = File.ReadAllText(FilePath);
+            var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
             settings.Auth = Unprotect(settings.AuthProtected);
+            MigrateArianaLabClient(json, settings);
             return settings;
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
             return new AppSettings();
         }
+    }
+
+    private static void MigrateArianaLabClient(string json, AppSettings settings)
+    {
+        using var document = JsonDocument.Parse(json);
+        if (document.RootElement.ValueKind != JsonValueKind.Object
+            || document.RootElement.TryGetProperty(nameof(AppSettings.ArianaLabClient), out _)
+            || !document.RootElement.TryGetProperty("ArianaLabClientPath", out var pathElement)
+            || !document.RootElement.TryGetProperty("ArianaLabClientExecutable", out var executableElement))
+            return;
+
+        var path = pathElement.GetString();
+        var executable = executableElement.GetString();
+        if (!string.IsNullOrWhiteSpace(path) && !string.IsNullOrWhiteSpace(executable))
+            settings.ArianaLabClient = Path.Combine(path, executable);
     }
 
     public void Save(AppSettings settings)
